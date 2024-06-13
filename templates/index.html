@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de Voyages</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Recherche de Voyages par Budget</h1>
+    <form id="search-form">
+        <label for="origin">Ville de départ:</label>
+        <input type="text" id="origin" name="origin" required>
+        <label for="budget">Budget (€):</label>
+        <input type="number" id="budget" name="budget" required>
+        <button type="submit">Rechercher</button>
+    </form>
+    <div id="results"></div>
+    <script>
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const origin = document.getElementById('origin').value;
+            const budget = document.getElementById('budget').value;
+            
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ origin, budget })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p>${data.error}</p>`;
+                } else {
+                    data.forEach(flight => {
+                        resultsDiv.innerHTML += `<p>Vol de ${flight['originLocationCode']} à ${flight['destinationLocationCode']} pour ${flight['price']['total']}€</p>`;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
