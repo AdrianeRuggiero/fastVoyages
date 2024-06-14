@@ -1,11 +1,15 @@
 import requests
 from auth_amadeus import create_auth_headers
+from geocoding import get_coordinates
 
-
-def search_activities(latitude, longitude, radius):
+def search_activities(latitude=None, longitude=None, radius=1, city_name=None):
     try:
-        # Construire l'URL avec les paramètres spécifiés
-        url = f'https://test.api.amadeus.com/v1/shopping/activities'
+        if city_name:
+            latitude, longitude = get_coordinates(city_name)
+        elif latitude is None or longitude is None:
+            raise ValueError("Either city_name or both latitude and longitude must be provided")
+
+        url = 'https://test.api.amadeus.com/v1/shopping/activities'
         params = {
             'latitude': latitude,
             'longitude': longitude,
@@ -13,29 +17,42 @@ def search_activities(latitude, longitude, radius):
         }
         
         headers = create_auth_headers()
-
-        # Faire la requête GET avec les headers d'authentification et les paramètres
         response = requests.get(url, headers=headers, params=params)
-
-        # Vérifier le statut de la réponse
         response.raise_for_status()
-
-        # Retourner les données JSON de la réponse
         return response.json()
-
     except requests.exceptions.HTTPError as http_err:
         print(f"Erreur HTTP : {http_err}")
+        print(f"Réponse de l'API : {response.content}")
+        return None
     except Exception as err:
         print(f"Erreur : {err}")
+        return None
+
+
+def display_top_activities(city_name, radius):
+    # Rechercher les activités dans la ville spécifiée avec un rayon donné
+    activities_response = search_activities(city_name=city_name, radius=radius)
+
+    if activities_response:
+        # Extraire la liste d'activités du dictionnaire de réponse
+        activities = activities_response.get('data', [])
+
+        # Afficher seulement les 4 premières activités si elles existent
+        top_activities = activities[:4]
+        for index, activity in enumerate(top_activities, start=1):
+            print(f"Activité {index}: {activity['name']}")
+            print(f"    Description: {activity.get('shortDescription', 'Pas de description disponible')}")
+            print(f"    Prix: {activity.get('price', 'Information de prix non disponible')}")
+            print(f"    Durée: {activity.get('duration', 'Information de durée non disponible')}")
+            print(f"    Lieu: {activity.get('location', {}).get('address', 'Adresse non disponible')}")
+            print("")
+
+    else:
+        print("La recherche d'activités a échoué.")
 
 # Exemple d'utilisation
 if __name__ == "__main__":
-    latitude = 41.397158
-    longitude = 2.160873
+    city_name = "Barcelone"
     radius = 1  # en kilomètres
 
-    activities = search_activities(latitude, longitude, radius)
-    if activities:
-        print(activities)
-    else:
-        print("La recherche d'activités a échoué.")
+    display_top_activities(city_name, radius)
