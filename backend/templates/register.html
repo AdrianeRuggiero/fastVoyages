@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <h1>Inscription</h1>
+    <form method="POST" action="/register">
+        <label>Prénom:</label><br>
+        <input type="text" name="first_name" required><br><br>
+        <label>Nom:</label><br>
+        <input type="text" name="last_name" required><br><br>
+        <label>Date de Naissance:</label><br>
+        <input type="date" name="date_of_birth" required><br><br>
+        <label>Pays de Résidence:</label><br>
+        <input type="text" name="country_of_residence" required><br><br>
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+        <label>Mot de Passe:</label><br>
+        <input type="password" name="password" required><br><br>
+        <button type="submit">S'inscrire</button>
+    </form>
+</body>
+</html>

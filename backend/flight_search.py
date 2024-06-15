@@ -1,106 +1,79 @@
 import requests
-from auth_amadeus import create_auth_headers
+from dotenv import load_dotenv
+import os
 
-def search_flight_destinations(origin, departure_date, one_way, non_stop, max_price):
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
+
+def get_access_token():
+    client_id = os.getenv('CLIENT_ID')
+    client_secret = os.getenv('CLIENT_SECRET')
+    auth_url = 'https://test.api.amadeus.com/v1/security/oauth2/token'
+
+    auth_data = {
+        'grant_type': 'client_credentials',
+        'client_id': client_id,
+        'client_secret': client_secret
+    }
+
+    response = requests.post(auth_url, data=auth_data)
     try:
-        url = 'https://test.api.amadeus.com/v1/shopping/flight-destinations'
+        response.raise_for_status()  # Lever une erreur si la requête échoue
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error occurred: {e}")
+        print(f"Response: {response.text}")
+        raise
 
-        params = {
-            'origin': origin,
-            'departureDate': departure_date,
-            'oneWay': one_way,
-            'nonStop': non_stop,
-            'maxPrice': max_price
-        }
+    token_response = response.json()
 
-        headers = create_auth_headers()
+    access_token = token_response.get('access_token')
+    if access_token:
+        print("Access token obtained successfully:", access_token)
+    else:
+        print("Failed to obtain access token. Response:", token_response)
 
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+    return access_token
 
-        return response.json()
+def create_auth_headers():
+    access_token = get_access_token()
+    if not access_token:
+        raise ValueError("Access token is None. Cannot create auth headers.")
+    print("Authorization Header:", f'Bearer {access_token}')
+    return {
+        'Authorization': f'Bearer {access_token}'
+    }
 
-    except requests.exceptions.HTTPError as http_err:
-        print(f"Erreur HTTP : {http_err}")
-        print(f"Réponse de l'API : {response.content}")
-        return None
-    except requests.exceptions.RequestException as req_err:
-        print(f"Erreur de requête : {req_err}")
-        return None
-    except Exception as ex:
-        print(f"Erreur inattendue : {ex}")
-        return None
-
-def extract_flight_information(flight_offer):
+def search_flights(origin, budget, departure_date, return_date):
+    url = 'https://test.api.amadeus.com/v1/shopping/flight-offers'
+    params = {
+        'origin': origin,
+        'maxPrice': budget,
+        'departureDate': departure_date,
+        'returnDate': return_date
+    }
+    headers = create_auth_headers()
+    print(f"Request URL: {url}")
+    print(f"Request Headers: {headers}")
+    print(f"Request Params: {params}")
+    response = requests.get(url, headers=headers, params=params)
     try:
-        destination_info = flight_offer.get('destination')
-        departure_date = flight_offer.get('departureDate')
-        return_date = flight_offer.get('returnDate', None)
-        price_total = flight_offer.get('price', {}).get('total', 'N/A')
-        links = flight_offer.get('links', {})
-
-        return {
-            'destination': destination_info,
-            'departure_date': departure_date,
-            'return_date': return_date,
-            'price_total': price_total,
-            'flight_dates_link': links.get('flightDates', 'N/A'),
-            'flight_offers_link': links.get('flightOffers', 'N/A')
-        }
-    except Exception as ex:
-        print(f"Erreur lors de l'extraction des informations de vol : {ex}")
-        return None
-
-
-def find_unique_destinations(origin, departure_date, one_way, non_stop, max_price, num_destinations=5):
-    try:
-        # Obtenir les offres de vols disponibles
-        destinations = search_flight_destinations(origin, departure_date, one_way, non_stop, max_price)
-        if not destinations or 'data' not in destinations:
-            print("Aucune destination trouvée.")
-            return []
-
-        flight_offers = destinations['data']
-
-        unique_destinations = []
-        seen_destinations = set()
-
-        for offer in flight_offers:
-            destination_info = offer.get('destination')
-            if destination_info not in seen_destinations and len(unique_destinations) < num_destinations:
-                seen_destinations.add(destination_info)
-                flight_info = extract_flight_information(offer)
-                if flight_info:
-                    unique_destinations.append(flight_info)
-
-        return unique_destinations
-
-    except Exception as ex:
-        print(f"Erreur : {ex}")
-        return []
+        response.raise_for_status()  # Lever une erreur si la requête échoue
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error occurred: {e}")
+        print(f"Response: {response.text}")
+        raise
+    return response.json()
 
 # Exemple d'utilisation
 if __name__ == "__main__":
-    origin = 'PAR'  # Code IATA pour Paris
-    departure_date = '2024-07-30'  # Date de départ (format YYYY-MM-DD)
-    one_way = False  # Vols aller-retour
-    non_stop = False  # Vols avec escales
-    max_price = 300  # Budget maximum en USD
-
-    num_destinations = 5  # Nombre de destinations uniques à trouver
-
-    unique_destinations = find_unique_destinations(origin, departure_date, one_way, non_stop, max_price, num_destinations)
-    if unique_destinations:
-        print("Informations sur les 5 destinations uniques :")
-        for idx, destination in enumerate(unique_destinations, start=1):
-            print(f"{idx}. Destination : {destination['destination']}")
-            print(f"   Date de départ : {destination['departure_date']}")
-            if destination['return_date']:
-                print(f"   Date de retour : {destination['return_date']}")
-            print(f"   Prix total : {destination['price_total']}")
-            print(f"   Liens vers les détails du vol :")
-            print(f"   - Dates de vol : {destination['flight_dates_link']}")
-            print(f"   - Offres de vol : {destination['flight_offers_link']}")
-            print("\n")
-    else:
-        print("Aucune destination unique trouvée.")
+    origin = "CDG"  # Paris Charles de Gaulle
+    budget = 500
+    departure_date = "2023-07-01"
+    return_date = "2023-07-15"
+    try:
+        flights = search_flights(origin, budget, departure_date, return_date)
+        print(flights)
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats de la Recherche de Vols</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <h1>Résultats de la Recherche de Vols</h1>
+    <ul>
+        {% for flight in flights %}
+        <li>
+            <strong>Compagnie aérienne:</strong> {{ flight['carrier'] }}<br>
+            <strong>Prix:</strong> {{ flight['price'] }} {{ flight['currency'] }}<br>
+            <strong>Départ:</strong> {{ flight['departure_date_time'] }}<br>
+            <strong>Retour:</strong> {{ flight['return_date_time'] }}<br>
+            <hr>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

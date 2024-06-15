@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recherche de Voyages</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <h1>Inscription</h1>
+    <form action="/register" method="post">
+        <label>Nom:</label>
+        <input type="text" name="last_name"><br>
+        <label>Prénom:</label>
+        <input type="text" name="first_name"><br>
+        <label>Date de Naissance:</label>
+        <input type="date" name="date_of_birth"><br>
+        <label>Pays de Résidence:</label>
+        <input type="text" name="country_of_residence"><br>
+        <button type="submit">S'inscrire</button>
+    </form>
+    <h1>Recherche de Vols</h1>
+    <form action="/search" method="post">
+        <label>Ville de départ:</label>
+        <input type="text" name="origin"><br>
+        <label>Budget:</label>
+        <input type="number" name="budget"><br>
+        <label>Date de départ:</label>
+        <input type="date" name="departure_date"><br>
+        <label>Date de retour:</label>
+        <input type="date" name="return_date"><br>
+        <button type="submit">Rechercher</button>
+    </form>
+</body>
+</html>
