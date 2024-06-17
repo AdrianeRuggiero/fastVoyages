@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <h1>Bienvenue sur notre application !</h1>
+    {% if current_user.is_authenticated %}
+        <ul>
+            <li><a href="/flight_search">Recherche de vols</a></li>
+            <li><a href="/logout">Déconnexion</a></li>
+        </ul>
+    {% else %}
+        <ul>
+            <li><a href="/register">Inscription</a></li>
+            <li><a href="/login">Connexion</a></li>
+        </ul>
+    {% endif %}
+</body>
+</html>

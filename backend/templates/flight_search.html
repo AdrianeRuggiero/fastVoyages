@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Search Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+</head>
+<body>
+    <h1>Recherche de Vols</h1>
+    <form method="POST" action="/flight_search_results">
+        <label for="origin">Origine:</label>
+        <input type="text" id="origin" name="origin" required><br><br>
+
+        <label for="budget">Budget maximum:</label>
+        <input type="number" id="budget" name="budget" required><br><br>
+
+        <label for="departure_date">Date de départ:</label>
+        <input type="date" id="departure_date" name="departure_date" required><br><br>
+
+        <input type="submit" value="Rechercher">
+    </form>
+</body>
+</html>

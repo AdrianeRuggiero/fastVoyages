@@ -1,3 +1,5 @@
+# main.py
+
 import requests
 from auth_amadeus import create_auth_headers
 
@@ -50,7 +52,6 @@ def extract_flight_information(flight_offer):
     except Exception as ex:
         print(f"Erreur lors de l'extraction des informations de vol : {ex}")
         return None
-
 
 def find_unique_destinations(origin, departure_date, one_way, non_stop, max_price, num_destinations=5):
     try:
