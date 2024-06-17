@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, redirect, url_for, render_template
 import sqlite3
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flight_search import search_flights
+from flight_search import find_unique_destinations  # Import from flight_search.py
 import requests
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -26,6 +27,11 @@ def init_db():
         )
         ''')
         conn.commit()
+
+def reset_db():
+    if os.path.exists('users.db'):
+        os.remove('users.db')
+    init_db()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -105,20 +111,21 @@ def flight_search():
 def flight_search_results():
     if request.method == 'POST':
         origin = request.form.get('origin')
-        budget = request.form.get('budget')
+        max_price = request.form.get('max_price')
         departure_date = request.form.get('departure_date')
         return_date = request.form.get('return_date')
+        one_way = request.form.get('one_way') == 'on'  # Check if the one_way checkbox is checked
+        non_stop = request.form.get('non_stop') == 'on'  # Check if the non_stop checkbox is checked
 
         try:
-            flights = search_flights(origin, budget, departure_date, return_date)
+            flights = find_unique_destinations(origin, departure_date, one_way, non_stop, max_price, num_destinations=5)
             return render_template('flight_search_results.html', flights=flights)
         except requests.exceptions.HTTPError as err:
             return f"HTTP error occurred: {err}"
         except Exception as err:
             return f"An error occurred: {err}"
 
-    return redirect(url_for('flight_search'))  # Redirection vers la page de recherche si aucune donnée n'est reçue
-
+    return redirect(url_for('flight_search'))  # Redirect to the search page if no data is received
 
 @app.route('/logout')
 @login_required
@@ -127,5 +134,6 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    init_db()
+    reset_db()  # Reset the database before starting the app
     app.run(debug=True)
+
