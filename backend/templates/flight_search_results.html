@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultats de la Recherche de Vols</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/main.css') }}">
+    <title>Flight Search Results</title>
 </head>
 <body>
-    <h1>Résultats de la Recherche de Vols</h1>
-    <ul>
-        {% for flight in flights %}
-        <li>
-            <strong>Compagnie aérienne:</strong> {{ flight['carrier'] }}<br>
-            <strong>Prix:</strong> {{ flight['price'] }} {{ flight['currency'] }}<br>
-            <strong>Départ:</strong> {{ flight['departure_date_time'] }}<br>
-            <strong>Retour:</strong> {{ flight['return_date_time'] }}<br>
-            <hr>
-        </li>
-        {% endfor %}
-    </ul>
+    <h1>Flight Search Results</h1>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+    {% if flights %}
+        <ul>
+            {% for flight in flights %}
+                <li>
+                    <strong>Destination:</strong> {{ flight['destination'] }}<br>
+                    <strong>Departure Date:</strong> {{ flight['departure_date'] }}<br>
+                    {% if flight['return_date'] %}
+                        <strong>Return Date:</strong> {{ flight['return_date'] }}<br>
+                    {% endif %}
+                    <strong>Total Price:</strong> {{ flight['price_total'] }}<br>
+                    <strong>Flight Dates Link:</strong> <a href="{{ flight['flight_dates_link'] }}">{{ flight['flight_dates_link'] }}</a><br>
+                    <strong>Flight Offers Link:</strong> <a href="{{ flight['flight_offers_link'] }}">{{ flight['flight_offers_link'] }}</a><br>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No flight results available.</p>
+    {% endif %}
 </body>
 </html>
