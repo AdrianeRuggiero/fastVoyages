@@ -1,11 +1,12 @@
 import unittest
 from unittest.mock import patch, Mock
 import requests
-
 import sys
 import os
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend')))
-from flight_search import search_flight_destinations, extract_flight_information, find_unique_destinations
+from flight_search import search_flight_destinations, extract_flight_information, find_unique_destinations # type: ignore
+
 
 class TestFlightSearchFunctions(unittest.TestCase):
     def setUp(self):
