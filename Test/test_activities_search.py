@@ -1,9 +1,18 @@
 import unittest
 from unittest.mock import patch, Mock
-from activities_search import search_activities, display_top_activities
+import sys
+import os
+
+# Add the backend directory to the system path
+# to allow importing the activities_search module
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../backend"))
+)
+from backend.activities_search import search_activities, display_top_activities
 
 
 class TestActivitiesSearch(unittest.TestCase):
+    # Test the search_activities function with a city name
     @patch("activities_search.requests.get")
     @patch("activities_search.get_coordinates")
     def test_search_activities_with_city_name(
@@ -12,7 +21,7 @@ class TestActivitiesSearch(unittest.TestCase):
         mock_get_coordinates.return_value = (
             41.3850639,
             2.1734035,
-        )  # Coordinates for Barcelona
+        )  # Set up mock coordinates for Barcelona
         mock_response = Mock()
         mock_response.json.return_value = {
             "data": [
@@ -27,6 +36,7 @@ class TestActivitiesSearch(unittest.TestCase):
                 }
             ]
         }
+        # Set up a mock response with sample data
         mock_response.raise_for_status.return_value = None
         mock_requests_get.return_value = mock_response
 
