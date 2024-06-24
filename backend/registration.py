@@ -1,19 +1,30 @@
 from flask import Flask, request, jsonify, redirect, url_for, render_template
 import sqlite3
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flight_search import find_unique_destinations  # Import from flight_search.py
+from flight_search import find_unique_destinations
 import requests
 import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
+
 def connect_db():
+    """
+    Connect to the SQLite database and return the connection object.
+
+    Returns:
+        sqlite3.Connection: Connection object to the SQLite database.
+    """
     conn = sqlite3.connect('users.db')
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
+    """
+    Initialize the database by creating the users table if it does not exist.
+    """
     with connect_db() as conn:
         conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -28,28 +39,67 @@ def init_db():
         ''')
         conn.commit()
 
+
 def reset_db():
+    """
+    Reset the database by deleting the existing database file
+    and reinitializing it.
+    """
     if os.path.exists('users.db'):
         os.remove('users.db')
     init_db()
 
+
+# Initialize the login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 class User(UserMixin):
+    """
+    User class for Flask-Login, inheriting from UserMixin.
+    """
     def __init__(self, user_id):
         self.id = user_id
 
+
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Load a user by user_id.
+
+    Args:
+        user_id (str): The user ID.
+
+    Returns:
+        User: The user object.
+    """
     return User(user_id)
+
 
 @app.route('/')
 def home():
+    """
+    Render the home page.
+
+    Returns:
+        str: Rendered HTML template for the home page.
+    """
     return render_template('home.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Handle user registration.
+
+    Methods:
+        GET: Render the registration form.
+        POST: Process the registration form submission.
+
+    Returns:
+        str: Rendered HTML template or JSON response.
+    """
     if request.method == 'POST':
         data = request.form
         first_name = data.get('first_name')
@@ -77,12 +127,30 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/register_success')
 def register_success():
+    """
+    Render the registration success page.
+
+    Returns:
+        str: Rendered HTML template for the registration success page.
+    """
     return render_template('register_success.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Handle user login.
+
+    Methods:
+        GET: Render the login form.
+        POST: Process the login form submission.
+
+    Returns:
+        str: Rendered HTML template or JSON response.
+    """
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -101,19 +169,35 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/flight_search')
 @login_required
 def flight_search():
+    """
+    Render the flight search page.
+
+    Returns:
+        str: Rendered HTML template for the flight search page.
+    """
     return render_template('flight_search.html', user=current_user)
+
 
 @app.route('/flight_search_results', methods=['POST'])
 @login_required
 def flight_search_results():
+    """
+    Handle flight search results.
+
+    Methods:
+        POST: Process the flight search form submission and display results.
+
+    Returns:
+        str: Rendered HTML template or error message.
+    """
     if request.method == 'POST':
         origin = request.form.get('origin')
         max_price = request.form.get('max_price')
         departure_date = request.form.get('departure_date')
-        return_date = request.form.get('return_date')
         one_way = request.form.get('one_way') == 'on'  # Check if the one_way checkbox is checked
         non_stop = request.form.get('non_stop') == 'on'  # Check if the non_stop checkbox is checked
 
@@ -125,15 +209,22 @@ def flight_search_results():
         except Exception as err:
             return f"An error occurred: {err}"
 
-    return redirect(url_for('flight_search'))  # Redirect to the search page if no data is received
+    return redirect(url_for('flight_search'))  # Redirect to the search page
+
 
 @app.route('/logout')
 @login_required
 def logout():
+    """
+    Log out the current user and redirect to the home page.
+
+    Returns:
+        str: Redirect response to the home page.
+    """
     logout_user()
     return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     reset_db()  # Reset the database before starting the app
     app.run(debug=True)
-
