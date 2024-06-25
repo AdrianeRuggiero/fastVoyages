@@ -2,33 +2,50 @@ import os
 from dotenv import load_dotenv
 import requests
 
-# Charger les variables d'environnement depuis le fichier .env
+# Load environment variables from the .env file
 load_dotenv()
 
+
 def get_access_token():
-    # Récupérer les valeurs de client_id et client_secret depuis les variables d'environnement
+    """
+    Obtain an access token from the Amadeus API using client credentials.
+
+    Returns:
+        str: The access token required for API authentication.
+    """
+    # Retrieve client_id and client_secret from environment variables
     client_id = os.getenv('CLIENT_ID')
     client_secret = os.getenv('CLIENT_SECRET')
 
-    # URL pour obtenir le token de l'API Amadeus (mode test)
+    # URL to obtain the token from the Amadeus API (test mode)
     auth_url = 'https://test.api.amadeus.com/v1/security/oauth2/token'
 
-    # Données pour la requête d'authentification
+    # Data for the authentication request
     auth_data = {
         'grant_type': 'client_credentials',
         'client_id': client_id,
         'client_secret': client_secret
     }
 
-    # Faire la requête pour obtenir le token
+    # Make the request to obtain the token
     response = requests.post(auth_url, data=auth_data)
     token_response = response.json()
 
-    # Extraire et retourner le token d'accès
+    # Extract and return the access token
     return token_response.get('access_token')
 
+
 def create_auth_headers():
+    """
+    Create authorization headers for the Amadeus API requests.
+
+    Returns:
+        dict: A dictionary containing the authorization headers.
+    """
+    # Obtain the access token
     access_token = get_access_token()
+
+    # Create the authorization headers
     auth_headers = {
         'Authorization': f'Bearer {access_token}'
     }
