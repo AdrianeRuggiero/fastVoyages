@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flight_search import find_unique_destinations
 import requests
 import os
+from geocoding import get_coordinates
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -211,6 +212,26 @@ def flight_search_results():
 
     return redirect(url_for('flight_search'))  # Redirect to the search page
 
+@app.route('/activities_search', methods=['GET'])
+def activities_search():
+    city_name = request.args.get('city_name')
+    radius = request.args.get('radius')
+
+    # Logique pour obtenir les coordonnées de la ville
+    lat, lon = get_coordinates(city_name)
+
+    # Logique pour appeler l'API Amadeus
+    response = requests.get(
+        'https://test.api.amadeus.com/v1/shopping/activities',
+        params={'latitude': lat, 'longitude': lon, 'radius': radius},
+        headers={'Authorization': 'Bearer YOUR_ACCESS_TOKEN'}
+    )
+
+    # Traiter la réponse de l'API Amadeus
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        return jsonify({'error': 'Failed to fetch activities'}), 500
 
 @app.route('/logout')
 @login_required
