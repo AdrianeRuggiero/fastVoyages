@@ -1,9 +1,10 @@
 from locust import HttpUser, TaskSet, task, between
-from bs4 import BeautifulSoup
+from faker import Faker
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
+fake = Faker()
+
 
 class UserBehavior(TaskSet):
 
@@ -13,6 +14,8 @@ class UserBehavior(TaskSet):
 
     def register_and_login(self):
         """Register and login to the application."""
+        self.email = fake.email()
+        self.password = "qwe"
         self.register()
         self.login()
 
@@ -21,12 +24,12 @@ class UserBehavior(TaskSet):
         register_response = self.client.post("/register", data={
             "first_name": "John",
             "last_name": "Doe",
-            "date_of_birth": "1990-01-01",
+            "date_of_birth": "01.01.1990",
             "country_of_residence": "USA",
-            "email": "lesia.kapliuk@ecoles-epsi.net",
-            "password": "password123"
+            "email": self.email,
+            "password": self.password
         })
-        
+
         print(f"Register response status code: {register_response.status_code}")
         print(f"Register response content: {register_response.content.decode('utf-8')}")
 
@@ -40,8 +43,8 @@ class UserBehavior(TaskSet):
     def login(self):
         """Login to the application."""
         login_response = self.client.post("/login", data={
-            "email": "lesia.kapliuk@ecoles-epsi.net",
-            "password": "password123"
+            "email": self.email,
+            "password": self.password
         })
 
         if login_response.status_code == 200:
@@ -65,15 +68,13 @@ class UserBehavior(TaskSet):
             "origin": "NYC",
             "max_price": "500",
             "departure_date": "2024-07-01",
-            "return_date": "2024-07-15",
-            "one_way": "on",
-            "non_stop": "on"
         })
 
         if flight_response.status_code == 200:
             print("Flight search successful")
         else:
             print(f"Flight search failed: {flight_response.status_code}, {flight_response.text}")
+
 
 class WebsiteUser(HttpUser):
     tasks = [UserBehavior]
